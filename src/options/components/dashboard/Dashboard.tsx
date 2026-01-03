@@ -6,12 +6,26 @@ import { useState, useEffect, useCallback } from 'react';
 import browser from 'webextension-polyfill';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { createMessage } from '@/shared/types/messages';
-import type { Settings, FocusModeState, StreakData } from '@/shared/types';
-import { DEFAULT_FOCUS_STATE, DEFAULT_STREAK_DATA } from '@/shared/constants';
+import type {
+  Settings,
+  FocusModeState,
+  StreakData,
+  TimeLimitsState,
+  TimeTrackingState,
+  TimeGetHistoryMessage,
+} from '@/shared/types';
+import {
+  DEFAULT_FOCUS_STATE,
+  DEFAULT_STREAK_DATA,
+  DEFAULT_TIME_LIMITS_STATE,
+  DEFAULT_TIME_TRACKING_STATE,
+} from '@/shared/constants';
 import { StatusCard } from './StatusCard';
 import { PlatformSummary } from './PlatformSummary';
 import { QuickActions } from './QuickActions';
 import { ScheduleStatus } from './ScheduleStatus';
+import { TimeUsageCard } from './TimeUsageCard';
+import { ActivityHeatmap } from './ActivityHeatmap';
 import type { SectionId, SubSectionId } from '../layout';
 
 interface DashboardProps {
@@ -20,16 +34,28 @@ interface DashboardProps {
   onNavigate: (section: SectionId, subSection?: SubSectionId) => void;
 }
 
-export function Dashboard({ settings, onToggleEnabled, onNavigate }: DashboardProps) {
+export function Dashboard({
+  settings,
+  onToggleEnabled,
+  onNavigate,
+}: DashboardProps) {
   const { t, formatNumber } = useI18n();
-  const [focusState, setFocusState] = useState<FocusModeState>(DEFAULT_FOCUS_STATE);
+  const [focusState, setFocusState] =
+    useState<FocusModeState>(DEFAULT_FOCUS_STATE);
   const [streakData, setStreakData] = useState<StreakData>(DEFAULT_STREAK_DATA);
+  const [timeLimitsState, setTimeLimitsState] = useState<TimeLimitsState>(
+    DEFAULT_TIME_LIMITS_STATE
+  );
+  const [timeHistory, setTimeHistory] = useState<TimeTrackingState>(
+    DEFAULT_TIME_TRACKING_STATE
+  );
 
   const fetchFocusState = useCallback(async () => {
     try {
       const message = createMessage({ type: 'FOCUS_GET_STATE' as const });
-      const response = (await browser.runtime.sendMessage(message)) as { success: boolean; data?: FocusModeState; error?: string };
-      if (response.success === true && response.data != null) {
+      const response = await browser.runtime.sendMessage(message);
+      if (response.success === true && response.data !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setFocusState(response.data);
       }
     } catch {
@@ -40,9 +66,39 @@ export function Dashboard({ settings, onToggleEnabled, onNavigate }: DashboardPr
   const fetchStreakData = useCallback(async () => {
     try {
       const message = createMessage({ type: 'STREAK_GET_DATA' as const });
-      const response = (await browser.runtime.sendMessage(message)) as { success: boolean; data?: StreakData; error?: string };
-      if (response.success === true && response.data != null) {
+      const response = await browser.runtime.sendMessage(message);
+      if (response.success === true && response.data !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         setStreakData(response.data);
+      }
+    } catch {
+      // Ignore errors
+    }
+  }, []);
+
+  const fetchTimeUsage = useCallback(async () => {
+    try {
+      const message = createMessage({ type: 'TIME_GET_USAGE' as const });
+      const response = await browser.runtime.sendMessage(message);
+      if (response.success === true && response.data !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        setTimeLimitsState(response.data);
+      }
+    } catch {
+      // Ignore errors
+    }
+  }, []);
+
+  const fetchTimeHistory = useCallback(async () => {
+    try {
+      const message = createMessage<TimeGetHistoryMessage>({
+        type: 'TIME_GET_HISTORY',
+        payload: { days: 7 },
+      });
+      const response = await browser.runtime.sendMessage(message);
+      if (response.success === true && response.data !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        setTimeHistory(response.data);
       }
     } catch {
       // Ignore errors
@@ -52,13 +108,16 @@ export function Dashboard({ settings, onToggleEnabled, onNavigate }: DashboardPr
   useEffect(() => {
     void fetchFocusState();
     void fetchStreakData();
+    void fetchTimeUsage();
+    void fetchTimeHistory();
 
     const interval = setInterval(() => {
       void fetchFocusState();
+      void fetchTimeUsage();
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [fetchFocusState, fetchStreakData]);
+  }, [fetchFocusState, fetchStreakData, fetchTimeUsage, fetchTimeHistory]);
 
   return (
     <div className="dashboard">
@@ -71,7 +130,9 @@ export function Dashboard({ settings, onToggleEnabled, onNavigate }: DashboardPr
         <div className="dashboard-header-right">
           <label className="dashboard-toggle">
             <span className="dashboard-toggle-label">
-              {settings.enabled ? t('popupStatusEnabled') : t('popupStatusDisabled')}
+              {settings.enabled
+                ? t('popupStatusEnabled')
+                : t('popupStatusDisabled')}
             </span>
             <div className="toggle-switch toggle-switch-lg">
               <input
@@ -91,7 +152,12 @@ export function Dashboard({ settings, onToggleEnabled, onNavigate }: DashboardPr
           title={t('popupStatsToday')}
           value={formatNumber(settings.stats.blockedToday)}
           icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="10" />
               <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
             </svg>
@@ -102,7 +168,12 @@ export function Dashboard({ settings, onToggleEnabled, onNavigate }: DashboardPr
           title={t('popupStatsTotal')}
           value={formatNumber(settings.stats.blockedTotal)}
           icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           }
@@ -113,7 +184,12 @@ export function Dashboard({ settings, onToggleEnabled, onNavigate }: DashboardPr
           value={streakData.currentStreak}
           subtitle={`${t('streakBest')}: ${streakData.longestStreak}`}
           icon={
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
           }
@@ -138,6 +214,15 @@ export function Dashboard({ settings, onToggleEnabled, onNavigate }: DashboardPr
             onEditClick={() => onNavigate('schedule', 'scheduleConfig')}
           />
         </div>
+
+        {/* Time usage card */}
+        <TimeUsageCard
+          timeLimitsState={timeLimitsState}
+          onViewDetails={() => onNavigate('reports')}
+        />
+
+        {/* Activity heatmap */}
+        <ActivityHeatmap history={timeHistory.history} />
 
         {/* Quick actions */}
         <div className="dashboard-card dashboard-card-wide">

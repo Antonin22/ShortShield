@@ -179,6 +179,22 @@
     "message": "合計ブロック数",
     "description": "合計ブロック数のラベル"
   },
+  "popupStatsTodayUsage": {
+    "message": "視聴時間",
+    "description": "今日の視聴時間のラベル"
+  },
+  "watchingNow": {
+    "message": "視聴中",
+    "description": "コンテンツを視聴中に表示されるラベル"
+  },
+  "dashboardTodayUsage": {
+    "message": "今日の視聴時間",
+    "description": "今日の利用時間のダッシュボードカードタイトル"
+  },
+  "dashboardWeeklyActivity": {
+    "message": "週間アクティビティ",
+    "description": "週間アクティビティヒートマップのダッシュボードセクションタイトル"
+  },
   "popupOpenOptions": {
     "message": "設定",
     "description": "オプションページを開くボタンテキスト"

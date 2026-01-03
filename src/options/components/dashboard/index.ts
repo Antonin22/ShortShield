@@ -7,3 +7,5 @@ export { StatusCard } from './StatusCard';
 export { PlatformSummary } from './PlatformSummary';
 export { QuickActions } from './QuickActions';
 export { ScheduleStatus } from './ScheduleStatus';
+export { TimeUsageCard } from './TimeUsageCard';
+export { ActivityHeatmap } from './ActivityHeatmap';

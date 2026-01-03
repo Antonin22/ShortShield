@@ -179,6 +179,22 @@
     "message": "Total Blocked",
     "description": "Label for total block count"
   },
+  "popupStatsTodayUsage": {
+    "message": "Watched",
+    "description": "Label for today's watch time"
+  },
+  "watchingNow": {
+    "message": "Watching Now",
+    "description": "Label shown when actively watching content"
+  },
+  "dashboardTodayUsage": {
+    "message": "Today's Watch Time",
+    "description": "Dashboard card title for today's usage"
+  },
+  "dashboardWeeklyActivity": {
+    "message": "Weekly Activity",
+    "description": "Dashboard section title for weekly activity heatmap"
+  },
   "popupOpenOptions": {
     "message": "Settings",
     "description": "Button text to open options page"

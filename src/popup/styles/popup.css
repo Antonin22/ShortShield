@@ -970,3 +970,78 @@
 .block-site-domain {
   @apply text-xs text-gray-500 truncate flex-1;
 }
+
+/* ===================================== */
+/* Active Watching Widget                */
+/* ===================================== */
+
+.active-watching-widget {
+  @apply bg-blue-50 rounded-lg p-3 mb-3 border border-blue-200;
+}
+
+.dark .active-watching-widget {
+  @apply bg-blue-900/30 border-blue-700;
+}
+
+.active-watching-header {
+  @apply flex items-center gap-2 mb-2;
+}
+
+.pulse-dot {
+  @apply w-2 h-2 bg-green-500 rounded-full;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.active-watching-label {
+  @apply text-xs font-medium text-blue-600;
+}
+
+.dark .active-watching-label {
+  @apply text-blue-400;
+}
+
+.active-watching-content {
+  @apply flex items-center justify-between;
+}
+
+.active-watching-platform {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.dark .active-watching-platform {
+  @apply text-gray-200;
+}
+
+.active-watching-time {
+  @apply text-lg font-bold text-blue-600 tabular-nums;
+}
+
+.dark .active-watching-time {
+  @apply text-blue-400;
+}
+
+/* ===================================== */
+/* Compact Stats - Time Usage            */
+/* ===================================== */
+
+.compact-stat.time-usage {
+  @apply relative;
+}
+
+.compact-stat-icon.clock {
+  @apply text-blue-500;
+}
+
+.compact-stat-icon.clock svg {
+  @apply w-4 h-4;
+}
