@@ -55,7 +55,18 @@ export function getDetectorForHostname(
 
   for (const detector of detectors) {
     if (detector.isSupported(hostname)) {
-      logger.debug('Found detector for hostname', {
+      // Skip detectors that match the hostname but are disabled,
+      // so that lower-priority detectors (e.g. YouTubeDetector for Shorts)
+      // can be selected when higher-priority ones (e.g. FullSiteBlocker) are off.
+      if (!detector.isEnabled()) {
+        logger.debug('Detector matches hostname but is disabled, skipping', {
+          hostname,
+          platform: detector.platform,
+        });
+        continue;
+      }
+
+      logger.debug('Found enabled detector for hostname', {
         hostname,
         platform: detector.platform,
       });
@@ -63,7 +74,7 @@ export function getDetectorForHostname(
     }
   }
 
-  logger.debug('No detector for hostname', { hostname });
+  logger.debug('No enabled detector for hostname', { hostname });
   return null;
 }
 
